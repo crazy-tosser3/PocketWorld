@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "pocketworld:empty_bottle" },
+    { "item": "pocketworld:rift_shard" },
+    { "item": "pocketworld:rift_shard" },
+    { "item": "pocketworld:rift_shard" },
+    { "item": "minecraft:ender_eye" }
+  ],
+  "result": { "item": "pocketworld:pocket_bottle" }
+}

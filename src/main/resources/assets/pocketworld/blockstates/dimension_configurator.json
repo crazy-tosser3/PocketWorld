@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "pocketworld:block/dimension_configurator"
+    }
+  }
+}

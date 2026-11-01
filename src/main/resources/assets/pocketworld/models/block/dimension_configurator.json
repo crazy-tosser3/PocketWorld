@@ -1,0 +1,14 @@
+
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "pocketworld:block/dimension_configurator_front",
+    "south": "pocketworld:block/dimension_configurator_side",
+    "east": "pocketworld:block/dimension_configurator_side",
+    "west": "pocketworld:block/dimension_configurator_side",
+    "up": "pocketworld:block/dimension_configurator_top",
+    "down": "pocketworld:block/dimension_configurator_bottom",
+    "particle": "pocketworld:block/dimension_configurator_side"
+  }
+}
+
