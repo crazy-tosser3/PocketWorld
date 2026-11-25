@@ -52,7 +52,7 @@ public final class PocketActions {
         PocketPlot.generate(pocket, dimension);
         PocketDimensionData.get(server).setGenerated(dimension.getId(), true);
 
-        for (ServerPlayer inside : pocket.players()) {
+        for (ServerPlayer inside : List.copyOf(pocket.players())) {
             if (PocketPlot.indexAt(inside.getX(), inside.getZ()) == dimension.getIndex()) {
                 PocketTravel.teleportToSpawn(inside, pocket, dimension);
             }
@@ -95,21 +95,32 @@ public final class PocketActions {
             return "message.pocketworld.animal_limit";
         }
 
-        if (!player.getAbilities().instabuild && !takeShards(player, ANIMAL_COST)) {
-            return "message.pocketworld.animal_no_shards";
-        }
-
-        Vec3 at = PocketPlot.randomSurface(dimension, RANDOM);
         Mob mob = ANIMALS.get(animalIndex).create(pocket);
 
         if (mob == null) {
             return "message.pocketworld.animal_unknown";
         }
 
+        Vec3 at = PocketPlot.randomSurface(pocket, dimension, mob, RANDOM).orElse(null);
+        if (at == null) {
+            return "message.pocketworld.no_safe_spawn";
+        }
+
         mob.moveTo(at.x, at.y, at.z, RANDOM.nextFloat() * 360.0F, 0.0F);
         mob.setPersistenceRequired();
         mob.finalizeSpawn(pocket, pocket.getCurrentDifficultyAt(mob.blockPosition()),
                 MobSpawnType.COMMAND, null, null);
+        // Инициализация может изменить размер моба (например, возраст животного).
+        at = PocketPlot.randomSurface(pocket, dimension, mob, RANDOM).orElse(null);
+        if (at == null) {
+            return "message.pocketworld.no_safe_spawn";
+        }
+        mob.setPos(at.x, at.y, at.z);
+
+        if (!player.getAbilities().instabuild && !takeShards(player, ANIMAL_COST)) {
+            return "message.pocketworld.animal_no_shards";
+        }
+
         pocket.addFreshEntity(mob);
         return "message.pocketworld.animal_bought";
     }

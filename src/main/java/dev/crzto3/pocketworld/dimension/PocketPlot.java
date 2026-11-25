@@ -4,16 +4,21 @@ import dev.crzto3.pocketworld.registry.ModBlocks;
 import dev.crzto3.pocketworld.storage.PocketDimensionData.PocketDimension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -21,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Optional;
 
 /**
  * Участок общего измерения, принадлежащий одному карману:
@@ -73,12 +79,58 @@ public final class PocketPlot {
         return y > 8 && dx * dx + dz * dz <= leave * leave;
     }
 
-    public static Vec3 spawn(PocketDimension dimension) {
-        BlockPos center = center(dimension.getIndex());
-        Column column = column(dimension.getTerrain(), dimension.getRadius(), 3, 0);
-        int top = column == null ? BASE_Y : column.top();
+    public static Optional<Vec3> spawn(ServerLevel level, PocketDimension dimension, Entity entity) {
+        return safeSurface(level, dimension, entity, 3, 0);
+    }
 
-        return new Vec3(center.getX() + 3.5, top + 1.0, center.getZ() + 0.5);
+    /** Ищет реальную опору и свободное место для всего хитбокса, а не высоту из чертежа. */
+    private static Optional<Vec3> safeSurface(ServerLevel level, PocketDimension dimension,
+                                             Entity entity, int preferredX, int preferredZ) {
+        BlockPos center = center(dimension.getIndex());
+        Column preferred = column(dimension.getTerrain(), dimension.getRadius(), preferredX, preferredZ);
+        int preferredY = preferred == null ? BASE_Y + 1 : preferred.top() + 1;
+        Vec3 best = null;
+        double bestScore = Double.MAX_VALUE;
+        BlockPos.MutableBlockPos floor = new BlockPos.MutableBlockPos();
+
+        for (int dx = -SCAN; dx <= SCAN; dx++) {
+            for (int dz = -SCAN; dz <= SCAN; dz++) {
+                double horizontal = (dx - preferredX) * (dx - preferredX)
+                        + (dz - preferredZ) * (dz - preferredZ);
+                if (horizontal >= bestScore || column(dimension.getTerrain(), dimension.getRadius(), dx, dz) == null) {
+                    continue;
+                }
+
+                int x = center.getX() + dx;
+                int z = center.getZ() + dz;
+                int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+                for (int y = top; y > Math.max(8, level.getMinBuildHeight()); y--) {
+                    double score = horizontal + 4.0 * (y - preferredY) * (y - preferredY);
+                    if (score >= bestScore || y + entity.getBbHeight() > level.getMaxBuildHeight()) {
+                        continue;
+                    }
+
+                    floor.set(x, y - 1, z);
+                    BlockState state = level.getBlockState(floor);
+                    if (!state.isFaceSturdy(level, floor, Direction.UP)
+                            || !state.getFluidState().isEmpty() || state.is(BlockTags.LEAVES)
+                            || state.is(Blocks.MAGMA_BLOCK) || state.is(Blocks.CACTUS)
+                            || state.is(Blocks.CAMPFIRE) || state.is(Blocks.SOUL_CAMPFIRE)) {
+                        continue;
+                    }
+
+                    Vec3 at = new Vec3(x + 0.5, y, z + 0.5);
+                    AABB box = entity.getDimensions(entity.getPose()).makeBoundingBox(at);
+                    if (level.getWorldBorder().isWithinBounds(box)
+                            && level.noCollision(entity, box) && !level.containsAnyLiquid(box)) {
+                        best = at;
+                        bestScore = score;
+                    }
+                }
+            }
+        }
+
+        return Optional.ofNullable(best);
     }
 
     /** Форма столбца острова в точке (dx, dz) от центра. */
@@ -135,8 +187,8 @@ public final class PocketPlot {
     }
 
     /** Случайная точка на поверхности острова для появления существ. */
-    public static Vec3 randomSurface(PocketDimension dimension, Random random) {
-        BlockPos center = center(dimension.getIndex());
+    public static Optional<Vec3> randomSurface(ServerLevel level, PocketDimension dimension,
+                                               Entity entity, Random random) {
         int radius = dimension.getRadius();
 
         for (int attempt = 0; attempt < 40; attempt++) {
@@ -145,11 +197,11 @@ public final class PocketPlot {
             Column column = column(dimension.getTerrain(), radius, dx, dz);
 
             if (column != null && Math.abs(dx) + Math.abs(dz) > 2) {
-                return new Vec3(center.getX() + dx + 0.5, column.top() + 1.0, center.getZ() + dz + 0.5);
+                return safeSurface(level, dimension, entity, dx, dz);
             }
         }
 
-        return spawn(dimension);
+        return spawn(level, dimension, entity);
     }
 
     private static Palette palette(String biome) {

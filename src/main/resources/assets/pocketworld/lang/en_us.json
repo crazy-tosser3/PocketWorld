@@ -62,6 +62,7 @@
   "message.pocketworld.animal_unknown": "Unknown animal",
   "message.pocketworld.animal_limit": "The island is full of animals",
   "message.pocketworld.animal_no_shards": "Not enough rift shards",
+  "message.pocketworld.no_safe_spawn": "There is no safe spawn location on the island. Clear some space above a solid floor.",
   "message.pocketworld.animal_bought": "An animal appeared on the island",
   "message.pocketworld.invalid_sky": "Unknown sky. Available: twilight, sunset, day, night, aurora",
   "message.pocketworld.sky_set": "Sky set to %s",

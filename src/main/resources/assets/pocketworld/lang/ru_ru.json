@@ -62,6 +62,7 @@
   "message.pocketworld.animal_unknown": "Неизвестное животное",
   "message.pocketworld.animal_limit": "На острове слишком много животных",
   "message.pocketworld.animal_no_shards": "Не хватает осколков разлома",
+  "message.pocketworld.no_safe_spawn": "На острове нет безопасного места для появления. Освободите место с твёрдым полом.",
   "message.pocketworld.animal_bought": "На острове появилось животное",
   "message.pocketworld.invalid_sky": "Неизвестное небо. Доступны: twilight, sunset, day, night, aurora",
   "message.pocketworld.sky_set": "Небо: %s",

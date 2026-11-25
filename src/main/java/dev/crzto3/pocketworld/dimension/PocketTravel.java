@@ -61,16 +61,28 @@ public final class PocketTravel {
             ));
         }
 
-        teleportToSpawn(player, pocket, dimension);
+        if (!teleportToSpawn(player, pocket, dimension)) {
+            return false;
+        }
         player.displayClientMessage(Component.translatable("message.pocketworld.entered"), true);
         return true;
     }
 
-    public static void teleportToSpawn(ServerPlayer player, ServerLevel pocket, PocketDimension dimension) {
-        Vec3 spawn = PocketPlot.spawn(dimension);
+    public static boolean teleportToSpawn(ServerPlayer player, ServerLevel pocket, PocketDimension dimension) {
+        Vec3 spawn = PocketPlot.spawn(pocket, dimension, player).orElse(null);
+
+        if (spawn == null) {
+            if (PocketDimensions.isPocket(player.level())) {
+                leave(player);
+            }
+            player.displayClientMessage(Component.translatable("message.pocketworld.no_safe_spawn"), true);
+            return false;
+        }
 
         player.teleportTo(pocket, spawn.x, spawn.y, spawn.z, 90.0F, 0.0F);
+        player.setDeltaMovement(Vec3.ZERO);
         player.fallDistance = 0.0F;
+        return true;
     }
 
     public static boolean leave(ServerPlayer player) {

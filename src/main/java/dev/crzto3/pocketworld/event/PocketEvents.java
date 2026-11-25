@@ -20,7 +20,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -97,13 +96,15 @@ public class PocketEvents {
 
         // Грозу сопровождают безвредные молнии.
         if ("thunder".equals(dimension.getWeather()) && player.getRandom().nextInt(60) == 0) {
-            Vec3 at = PocketPlot.randomSurface(dimension, new Random());
             LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(player.level());
 
             if (bolt != null) {
-                bolt.moveTo(at.x, at.y, at.z);
-                bolt.setVisualOnly(true);
-                player.level().addFreshEntity(bolt);
+                PocketPlot.randomSurface((ServerLevel) player.level(), dimension, bolt, new Random())
+                        .ifPresent(at -> {
+                            bolt.moveTo(at.x, at.y, at.z);
+                            bolt.setVisualOnly(true);
+                            player.level().addFreshEntity(bolt);
+                        });
             }
         }
 

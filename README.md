@@ -3,7 +3,7 @@
 ![Java 17](https://img.shields.io/badge/Java-17-orange?logo=openjdk&logoColor=white)
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62b47a)
 ![Forge 47.4.x](https://img.shields.io/badge/Forge-47.4.x-1e2b3a)
-![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-blue)
+![Version 1.0.2](https://img.shields.io/badge/version-1.0.2-blue)
 ![Gradle](https://img.shields.io/badge/build-Gradle-02303a?logo=gradle&logoColor=white)
 ![Side: client and server](https://img.shields.io/badge/side-client%20%2B%20server-8a5cf6)
 ![Languages: RU, EN](https://img.shields.io/badge/lang-RU%20%7C%20EN-lightgrey)
@@ -89,10 +89,10 @@
 Готовый мод появится здесь:
 
 ```
-build/libs/examplemod-1.0.0.jar
+build/libs/examplemod-1.0.2.jar
 ```
 
-Имя файла берётся из `mod_id` и `mod_version` в `gradle.properties`. Сейчас там `mod_id=examplemod`, поэтому и jar называется `examplemod`. Если поменять `mod_id` на `pocketworld`, получится `pocketworld-1.0.0.jar`. Идентификатор мода в `mods.toml` при этом уже `pocketworld`.
+Имя файла берётся из `mod_id` и `mod_version` в `gradle.properties`. Сейчас там `mod_id=examplemod`, поэтому и jar называется `examplemod`. Если поменять `mod_id` на `pocketworld`, получится `pocketworld-1.0.2.jar`. Идентификатор мода в `mods.toml` при этом уже `pocketworld`.
 
 Установка: положите jar в папку `mods` клиента и сервера (мод нужен на обеих сторонах) с Forge 1.20.1 версии 47.4.28 или новее.
 
